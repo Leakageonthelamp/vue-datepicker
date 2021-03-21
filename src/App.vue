@@ -1,11 +1,12 @@
 <template>
-    <div id="app">
+    <div v-if="datesFromDB" id="app">
         <v-date-picker
             is-inline
             is-expanded
             locale="th"
             color="red"
             :available-dates="dates"
+            :disabled-dates="!isEmpty"
             :show-day-popover="false"
             v-model="selectedDate"
         />
@@ -31,12 +32,15 @@ export default {
             theme: '#da3906',
             momentsSDK: null,
             selectedDate: null,
-            datesFromDB: []
+            datesFromDB: null
         }
     },
     computed: {
         dates () {
             return this.datesFromDB.map(d => moment(d, 'DD/MM/YYYY').toDate())
+        },
+        isEmpty () {
+            return !this.datesFromDB
         }
     },
     methods: {
@@ -61,7 +65,7 @@ export default {
         }
     },
     async created () {
-        this.getdate()
+        await this.getdate()
         createMomentsSDK({
             title: 'Date picker',
             icon: `${window.location.origin}${window.location.pathname}/favicon.png`
