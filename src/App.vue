@@ -1,14 +1,14 @@
 <template>
     <div id="app">
         <v-date-picker
-               is-inline
-               is-expanded
-               locale="th"
-               color="red"
-               :show-day-popover="false"
-               v-model="selectedDate"
+            is-inline
+            is-expanded
+            locale="th"
+            color="red"
+            :available-dates="dates"
+            :show-day-popover="false"
+            v-model="selectedDate"
         />
-        <!-- :available-dates=dates -->
         <button
             class="select"
             :disabled="!selectedDate"
@@ -22,6 +22,7 @@
 
 <script>
 import createMomentsSDK from '@livechat/moments-sdk'
+import axios from 'axios'
 import moment from 'moment'
 
 export default {
@@ -30,7 +31,7 @@ export default {
             theme: '#da3906',
             momentsSDK: null,
             selectedDate: null,
-            datesFromDB: ['18/03/2021', '20/03/2021', '22/03/2021']
+            datesFromDB: []
         }
     },
     computed: {
@@ -40,15 +41,27 @@ export default {
     },
     methods: {
         select () {
+            const sendDate = moment(this.selectedDate)
+                .format('DD/MM/YYYY')
+                .toString()
             if (!this.selectedDate || !this.momentsSDK) {
                 return
             }
 
-            this.momentsSDK.sendMessage({ text: this.selectedDate.toLocaleDateString() })
+            this.momentsSDK.sendMessage({
+                text: sendDate
+            })
             this.momentsSDK.close()
+        },
+        async getdate () {
+            const date = await axios.get(
+                'https://88e284329bae.ngrok.io/sheets/schedule-date'
+            )
+            this.datesFromDB = date.data
         }
     },
     async created () {
+        this.getdate()
         createMomentsSDK({
             title: 'Date picker',
             icon: `${window.location.origin}${window.location.pathname}/favicon.png`
@@ -60,11 +73,11 @@ export default {
 </script>
 
 <style lang="sass">
-    *
-        margin: 0
-        padding: 0
-        box-sizing: border-box
-        outline: none
+*
+    margin: 0
+    padding: 0
+    box-sizing: border-box
+    outline: none
 
     html, body, #app
         height: 100%
